@@ -28,9 +28,9 @@ import java.util.logging.*;
  *
  * @author Azige
  */
-public final class GithubAPI{
+public final class GithubApi{
 
-    static final Logger LOG = Logger.getLogger(GithubAPI.class.getName());
+    static final Logger LOG = Logger.getLogger(GithubApi.class.getName());
 
     private final static String ROOT = "https://api.github.com";
 

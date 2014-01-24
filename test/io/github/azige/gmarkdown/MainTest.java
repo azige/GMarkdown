@@ -29,7 +29,7 @@ public class MainTest{
 
     @BeforeClass
     public static void setUpClass(){
-        GithubAPI.enableLog();
+        GithubApi.enableLog();
     }
 
     @AfterClass
@@ -46,6 +46,6 @@ public class MainTest{
 
     @Test
     public void testSomeMethod() throws Exception{
-        Main.main(new String[]{"test/test.groovy"});
+        Cli.main(new String[]{"-r", "TestResource", "test/*.gmd"});
     }
 }

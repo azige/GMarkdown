@@ -1,6 +1,4 @@
-/*
- * Copyright 2014 Azige.
- *
+/* * Copyright 2014 Azige. *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,13 +14,9 @@
 package io.github.azige.gmarkdown;
 
 import java.io.*;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import javax.script.*;
 
 /**
  *
@@ -30,59 +24,63 @@ import javax.script.ScriptException;
  */
 public class GMarkdown{
 
-    InputStream template;
-    String locale;
-    String resource;
+    static final String DEFAULT_TEMPLATE = "template.html";
+
+    final ScriptEngine engine;
+    String template;
+
+    public GMarkdown(){
+        engine = new ScriptEngineManager().getEngineByName("groovy");
+        engine.setBindings(engine.createBindings(), ScriptContext.GLOBAL_SCOPE);
+        bindStrings(null);
+    }
 
     public GMarkdown template(InputStream template){
-        this.template = template;
+        if (template == null){
+            throw new NullPointerException();
+        }
+        StringBuilder sb = new StringBuilder();
+        char[] buffer = new char[1024];
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(template, "UTF-8"))){
+            for (int c; (c = in.read(buffer)) != -1;){
+                sb.append(buffer, 0, c);
+            }
+        }catch (IOException ex){
+            throw new RuntimeException(ex);
+        }
+        this.template = sb.toString();
         return this;
     }
 
-    public GMarkdown locale(String locale){
-        this.locale = locale;
+    private void readDefaultTemplate(){
+        template(GMarkdown.class.getResourceAsStream("template.html"));
+    }
+
+    public GMarkdown resource(ResourceBundle bundle){
+        bindStrings(bundle);
         return this;
     }
 
-    public GMarkdown resource(String resource){
-        this.resource = resource;
-        return this;
+    private void bindStrings(ResourceBundle bundle){
+        engine.getBindings(ScriptContext.GLOBAL_SCOPE).put("strings", new Strings(bundle));
     }
 
-    public void proccess(File[] files){
+    public String proccess(Reader input){
         try{
-            ScriptEngine engine = new ScriptEngineManager().getEngineByName("groovy");
-            Strings strings;
-            if (locale == null){
-                strings = new Strings(ResourceBundle.getBundle(resource));
-            }else{
-                String[] strs = locale.split("_");
-                Locale.Builder builder = new Locale.Builder();
-                builder.setLanguage(strs[0]);
-                if (strs.length > 1){
-                    builder.setRegion(strs[1]);
-                }
-                strings = new Strings(ResourceBundle.getBundle(resource, builder.build()));
+            engine.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
+            String result = engine.eval(input).toString();
+            GithubApi api = new GithubApi();
+            result = api.convertMarkdown(result);
+            engine.put("content", result);
+            StringBuilder sb = new StringBuilder();
+            sb.append("\"\"\"");
+            if (template == null){
+                readDefaultTemplate();
             }
-            engine.getBindings(ScriptContext.GLOBAL_SCOPE).put("strings", strings);
-            for (File f : files){
-                engine.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
-                String result = engine.eval(new FileReader(f)).toString();
-                GithubAPI api = new GithubAPI();
-                result = api.convertMarkdown(result);
-                engine.put("body", result);
-                StringBuilder sb = new StringBuilder();
-                sb.append("\"\"\"");
-                try (BufferedReader in = new BufferedReader(new InputStreamReader(template, "UTF-8"))){
-                    String line;
-                    while ((line = in.readLine()) != null){
-                        sb.append(line).append('\n');
-                    }
-                }
-                sb.append("\"\"\"");
-                result = engine.eval(sb.toString()).toString();
-                System.out.println(result);
-            }
+            sb.append(template);
+            sb.append("\"\"\"");
+            result = engine.eval(sb.toString()).toString();
+            return result;
         }catch (IOException | ScriptException ex){
             throw new RuntimeException(ex);
         }
