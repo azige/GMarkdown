@@ -15,6 +15,7 @@
  */
 package io.github.azige.gmarkdown;
 
+import java.io.File;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -46,6 +47,6 @@ public class MainTest{
 
     @Test
     public void testSomeMethod() throws Exception{
-        Cli.main(new String[]{"-r", "TestResource", "test/*.gmd"});
+        Cli.main(new String[]{"-r", "TestResource", "target/test-classes/*.gmd"});
     }
 }

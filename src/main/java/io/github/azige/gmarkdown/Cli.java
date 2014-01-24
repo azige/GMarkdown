@@ -96,14 +96,17 @@ public class Cli{
                         parent = new File(".");
                     }
                     final Pattern p = Pattern.compile(new File(fileArg).getName());
-                    FileFilter filter = new FileFilter() {
+                    FileFilter filter = new FileFilter(){
 
                         @Override
                         public boolean accept(File pathname){
                             return p.matcher(pathname.getName()).matches();
                         }
                     };
-                    fileList.addAll(Arrays.asList(parent.listFiles(filter)));
+                    File[] files = parent.listFiles(filter);
+                    if (files != null){
+                        fileList.addAll(Arrays.asList(files));
+                    }
                 }else{
                     fileList.add(new File(fileArg));
                 }
