@@ -15,37 +15,25 @@
  */
 package io.github.azige.gmarkdown;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 /**
  *
  * @author Azige
  */
-public class MainTest{
+public class GMarkdownException extends RuntimeException{
 
-    @BeforeClass
-    public static void setUpClass(){
-        GithubApi.enableLog();
+    public GMarkdownException(){
     }
 
-    @AfterClass
-    public static void tearDownClass(){
+    public GMarkdownException(String message){
+        super(message);
     }
 
-    @Before
-    public void setUp(){
+    public GMarkdownException(String message, Throwable cause){
+        super(message, cause);
     }
 
-    @After
-    public void tearDown(){
+    public GMarkdownException(Throwable cause){
+        super(cause);
     }
 
-    @Test
-    public void testSomeMethod() throws Exception{
-        Cli.main(new String[]{"-r", "TestResource", "target/test-classes/*.gmd"});
-    }
 }

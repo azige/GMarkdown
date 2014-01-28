@@ -15,37 +15,23 @@
  */
 package io.github.azige.gmarkdown;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import java.io.IOException;
+import java.io.Reader;
 
 /**
  *
  * @author Azige
  */
-public class MainTest{
+class Util{
 
-    @BeforeClass
-    public static void setUpClass(){
-        GithubApi.enableLog();
-    }
+    static final int BUFFER_SIZE = 1 << 16;
 
-    @AfterClass
-    public static void tearDownClass(){
-    }
-
-    @Before
-    public void setUp(){
-    }
-
-    @After
-    public void tearDown(){
-    }
-
-    @Test
-    public void testSomeMethod() throws Exception{
-        Cli.main(new String[]{"-r", "TestResource", "target/test-classes/*.gmd"});
+    static String readAll(Reader in) throws IOException{
+        StringBuilder sb = new StringBuilder();
+        char[] buffer = new char[BUFFER_SIZE];
+        for (int b; (b = in.read(buffer)) != -1;){
+            sb.append(buffer, 0, b);
+        }
+        return sb.toString();
     }
 }

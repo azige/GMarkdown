@@ -13,8 +13,7 @@
  */
 package io.github.azige.gmarkdown;
 
-import java.io.*;
-import java.util.ResourceBundle;
+import java.util.List;
 
 import javax.script.*;
 
@@ -24,65 +23,27 @@ import javax.script.*;
  */
 public class GMarkdown{
 
-    static final String DEFAULT_TEMPLATE = "template.html";
-
     final ScriptEngine engine;
-    String template;
+    final List<Filter> preFilters;
+    final Filter htmlFilter;
+    final List<Filter> postFilters;
 
-    public GMarkdown(){
-        engine = new ScriptEngineManager().getEngineByName("groovy");
-        engine.setBindings(engine.createBindings(), ScriptContext.GLOBAL_SCOPE);
-        bindStrings(null);
+    GMarkdown(ScriptEngine engine, List<Filter> preFilters, Filter htmlFilter, List<Filter> postFilters){
+        this.engine = engine;
+        this.preFilters = preFilters;
+        this.htmlFilter = htmlFilter;
+        this.postFilters = postFilters;
     }
 
-    public GMarkdown template(InputStream template){
-        if (template == null){
-            throw new NullPointerException();
+    public String process(String source){
+        engine.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
+        for (Filter f : preFilters){
+            source = f.filter(source);
         }
-        StringBuilder sb = new StringBuilder();
-        char[] buffer = new char[1024];
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(template, "UTF-8"))){
-            for (int c; (c = in.read(buffer)) != -1;){
-                sb.append(buffer, 0, c);
-            }
-        }catch (IOException ex){
-            throw new RuntimeException(ex);
+        source = htmlFilter.filter(source);
+        for (Filter f : postFilters){
+            source = f.filter(source);
         }
-        this.template = sb.toString();
-        return this;
-    }
-
-    private void readDefaultTemplate(){
-        template(GMarkdown.class.getResourceAsStream("template.html"));
-    }
-
-    public GMarkdown resource(ResourceBundle bundle){
-        bindStrings(bundle);
-        return this;
-    }
-
-    private void bindStrings(ResourceBundle bundle){
-        engine.getBindings(ScriptContext.GLOBAL_SCOPE).put("strings", new Strings(bundle));
-    }
-
-    public String process(Reader input){
-        try{
-            engine.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
-            String result = engine.eval(input).toString();
-            GithubApi api = new GithubApi();
-            result = api.convertMarkdown(result);
-            engine.put("content", result);
-            StringBuilder sb = new StringBuilder();
-            sb.append("\"\"\"");
-            if (template == null){
-                readDefaultTemplate();
-            }
-            sb.append(template);
-            sb.append("\"\"\"");
-            result = engine.eval(sb.toString()).toString();
-            return result;
-        }catch (IOException | ScriptException ex){
-            throw new RuntimeException(ex);
-        }
+        return source;
     }
 }

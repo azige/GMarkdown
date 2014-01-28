@@ -15,37 +15,28 @@
  */
 package io.github.azige.gmarkdown;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 
 /**
  *
  * @author Azige
  */
-public class MainTest{
+public class GroovyPreFilter implements GroovyFilter{
 
-    @BeforeClass
-    public static void setUpClass(){
-        GithubApi.enableLog();
+    private ScriptEngine engine;
+
+    @Override
+    public String filter(String source){
+        try{
+            return engine.eval(source).toString();
+        }catch (ScriptException ex){
+            throw new GMarkdownException(ex);
+        }
     }
 
-    @AfterClass
-    public static void tearDownClass(){
-    }
-
-    @Before
-    public void setUp(){
-    }
-
-    @After
-    public void tearDown(){
-    }
-
-    @Test
-    public void testSomeMethod() throws Exception{
-        Cli.main(new String[]{"-r", "TestResource", "target/test-classes/*.gmd"});
+    @Override
+    public void setEngine(ScriptEngine engine){
+        this.engine = engine;
     }
 }

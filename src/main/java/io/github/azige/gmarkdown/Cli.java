@@ -28,7 +28,7 @@ import org.apache.commons.cli.*;
 public class Cli{
 
     public static void main(String[] args){
-        
+
         Options options = new Options()
             .addOption("h", "help", false, "print this message")
             .addOption(OptionBuilder
@@ -60,29 +60,18 @@ public class Cli{
             if (fileArgs.length < 1){
                 throw new ParseException("Missing input files.");
             }
-            GMarkdown gm = new GMarkdown();
+            GMarkdownBuilder builder = new GMarkdownBuilder();
             if (cl.hasOption('t')){
-                String templateArg = cl.getOptionValue('t');
-                InputStream template = Cli.class.getResourceAsStream(templateArg);
-                if (template == null){
-                    template = new FileInputStream(templateArg);
-                }
-                gm.template(template);
+                String template = cl.getOptionValue('t');
+                System.setProperty("template.path", template);
             }
 
             String resource = cl.getOptionValue('r');
             if (resource != null){
+                System.setProperty("strings.resource", resource);
                 String locale = cl.getOptionValue('l');
-                if (locale == null){
-                    gm.resource(ResourceBundle.getBundle(resource));
-                }else{
-                    String[] strs = locale.split("_");
-                    Locale.Builder builder = new Locale.Builder();
-                    builder.setLanguage(strs[0]);
-                    if (strs.length > 1){
-                        builder.setRegion(strs[1]);
-                    }
-                    gm.resource(ResourceBundle.getBundle(resource, builder.build()));
+                if (locale != null){
+                    System.setProperty("strings.locale", locale);
                 }
             }
 
@@ -111,10 +100,12 @@ public class Cli{
                 }
             }
 
+            GMarkdown gm = builder.build();
+
             for (File f : fileList){
                 String result;
-                try (Reader input = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"))){
-                    result = gm.process(input);
+                try (Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"))){
+                    result = gm.process(Util.readAll(in));
                 }
                 if (f.getName().contains(".")){
                     Matcher matcher = Pattern.compile(".+\\.").matcher(f.getName());

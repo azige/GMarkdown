@@ -15,37 +15,11 @@
  */
 package io.github.azige.gmarkdown;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 /**
  *
  * @author Azige
  */
-public class MainTest{
+public interface Plugin{
 
-    @BeforeClass
-    public static void setUpClass(){
-        GithubApi.enableLog();
-    }
-
-    @AfterClass
-    public static void tearDownClass(){
-    }
-
-    @Before
-    public void setUp(){
-    }
-
-    @After
-    public void tearDown(){
-    }
-
-    @Test
-    public void testSomeMethod() throws Exception{
-        Cli.main(new String[]{"-r", "TestResource", "target/test-classes/*.gmd"});
-    }
+    String getName();
 }
