@@ -16,7 +16,6 @@
 package io.github.azige.gmarkdown;
 
 import java.io.*;
-import java.nio.CharBuffer;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,7 +28,7 @@ import org.apache.commons.cli.*;
 public class Cli{
 
     public static void main(String[] args){
-
+        
         Options options = new Options()
             .addOption("h", "help", false, "print this message")
             .addOption(OptionBuilder
@@ -115,7 +114,7 @@ public class Cli{
             for (File f : fileList){
                 String result;
                 try (Reader input = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"))){
-                    result = gm.proccess(input);
+                    result = gm.process(input);
                 }
                 if (f.getName().contains(".")){
                     Matcher matcher = Pattern.compile(".+\\.").matcher(f.getName());

@@ -65,7 +65,7 @@ public class GMarkdown{
         engine.getBindings(ScriptContext.GLOBAL_SCOPE).put("strings", new Strings(bundle));
     }
 
-    public String proccess(Reader input){
+    public String process(Reader input){
         try{
             engine.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
             String result = engine.eval(input).toString();
