@@ -63,7 +63,11 @@ public class Cli{
             GMarkdownBuilder builder = new GMarkdownBuilder();
             if (cl.hasOption('t')){
                 String template = cl.getOptionValue('t');
-                System.setProperty("template.path", template);
+                try (Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(template), "UTF-8"))){
+                    builder.addPostFilter(new TemplateFilter(Util.readAll(in)));
+                }
+            }else{
+                builder.addPostFilter(new TemplateFilter());
             }
 
             String resource = cl.getOptionValue('r');
@@ -74,6 +78,7 @@ public class Cli{
                     System.setProperty("strings.locale", locale);
                 }
             }
+            builder.addPlugin((Plugin)Class.forName("io.github.azige.gmarkdown.Strings").newInstance());
 
             List<File> fileList = new LinkedList<>();
             for (String fileArg : fileArgs){
@@ -121,7 +126,7 @@ public class Cli{
         }catch (ParseException ex){
             System.err.println(ex.getMessage());
             printHelp(System.err, options);
-        }catch (IOException ex){
+        }catch (IOException | ClassNotFoundException | IllegalAccessException | InstantiationException ex){
             System.err.println(ex);
         }
 

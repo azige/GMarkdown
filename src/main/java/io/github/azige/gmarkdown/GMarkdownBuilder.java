@@ -79,12 +79,6 @@ public class GMarkdownBuilder{
         if (htmlFilter == null){
             htmlFilter = new MarkdownFilter();
         }
-        addPostFilter(new TemplateFilter());
-        try{
-            addPlugin((Plugin)Class.forName("io.github.azige.gmarkdown.Strings").newInstance());
-        }catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex){
-            throw new GMarkdownException(ex);
-        }
         return new GMarkdown(engine, preFilters, htmlFilter, postFilters);
     }
 }

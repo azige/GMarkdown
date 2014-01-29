@@ -35,14 +35,10 @@ public class TemplateFilter implements GroovyFilter{
     String template;
 
     public TemplateFilter(){
-        String path = System.getProperty("template.path");
-        if (path != null){
-            try (Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(path), "UTF-8"))){
-                template = "\"\"\"" + Util.readAll(in) + "\"\"\"";
-            }catch (IOException ex){
-                throw new GMarkdownException(ex);
-            }
-        }
+    }
+
+    public TemplateFilter(String template){
+        this.template = "\"\"\"" + template + "\"\"\"";
     }
 
     public void setTemplate(String template){
