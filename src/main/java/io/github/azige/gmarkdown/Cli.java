@@ -19,6 +19,7 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.commons.cli.*;
 
 /**
@@ -46,7 +47,12 @@ public class Cli{
                 .hasArg()
                 .withArgName("template")
                 .withDescription("set the template")
-                .create('t'));
+                .create('t'))
+            .addOption(OptionBuilder
+            .hasArg()
+            .withArgName("plugin dir")
+            .withDescription("set the directory to load plugins")
+            .create('p'));
         try{
             CommandLineParser parser = new BasicParser();
             CommandLine cl = parser.parse(options, args);
@@ -78,7 +84,18 @@ public class Cli{
                     System.setProperty("strings.locale", locale);
                 }
             }
-            builder.addPlugin((Plugin)Class.forName("io.github.azige.gmarkdown.Strings").newInstance());
+            builder.addPlugin(Util.loadPlugin("io.github.azige.gmarkdown.Strings"));
+
+            File pluginDir;
+            if (cl.hasOption('p')){
+                pluginDir = new File(cl.getOptionValue('p'));
+            }else{
+                pluginDir = new File("./plugin");
+            }
+
+            for (Plugin p : Util.loadPluginsFromDirectory(pluginDir)){
+                builder.addPlugin(p);
+            }
 
             List<File> fileList = new LinkedList<>();
             for (String fileArg : fileArgs){
@@ -126,17 +143,15 @@ public class Cli{
         }catch (ParseException ex){
             System.err.println(ex.getMessage());
             printHelp(System.err, options);
-        }catch (IOException | ClassNotFoundException | IllegalAccessException | InstantiationException ex){
+        }catch (IOException ex){
             System.err.println(ex);
         }
-
-        //gm.resource("TestResource").template(Main.class.getResourceAsStream("template.html")).proccess(new File[]{new File(args[0])});
     }
 
     static void printHelp(PrintStream out, Options options){
         HelpFormatter hf = new HelpFormatter();
         PrintWriter pw = new PrintWriter(out);
-        hf.printHelp(pw, hf.getWidth(), "gmarkdown [-r <bundle> [-l <locale>]] [-t <template>] <input files>",
+        hf.printHelp(pw, hf.getWidth(), "gmarkdown [-r <bundle> [-l <locale>]] [-t <template>] [-p <plugin dir> <input files>",
             "Convert input files.", options, hf.getLeftPadding(), hf.getDescPadding(), null);
         pw.flush();
     }

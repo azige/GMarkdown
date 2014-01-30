@@ -23,25 +23,34 @@ import javax.script.*;
  */
 public class GMarkdown{
 
-    final ScriptEngine engine;
+    final ScriptEngineFactory engineFactory;
+    final Bindings globalBind;
     final List<Filter> preFilters;
     final Filter htmlFilter;
     final List<Filter> postFilters;
 
-    GMarkdown(ScriptEngine engine, List<Filter> preFilters, Filter htmlFilter, List<Filter> postFilters){
-        this.engine = engine;
+    GMarkdown(ScriptEngineFactory engineFactory, Bindings globalBind, List<Filter> preFilters, Filter htmlFilter, List<Filter> postFilters){
+        this.engineFactory = engineFactory;
+        this.globalBind = globalBind;
         this.preFilters = preFilters;
         this.htmlFilter = htmlFilter;
         this.postFilters = postFilters;
     }
 
     public String process(String source){
-        engine.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
+        ScriptEngine engine = engineFactory.getScriptEngine();
+        engine.setBindings(globalBind, ScriptContext.GLOBAL_SCOPE);
         for (Filter f : preFilters){
+            if (f instanceof GroovyFilter){
+                ((GroovyFilter)f).setEngine(engine);
+            }
             source = f.filter(source);
         }
         source = htmlFilter.filter(source);
         for (Filter f : postFilters){
+            if (f instanceof GroovyFilter){
+                ((GroovyFilter)f).setEngine(engine);
+            }
             source = f.filter(source);
         }
         return source;

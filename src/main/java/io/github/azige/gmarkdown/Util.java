@@ -15,16 +15,26 @@
  */
 package io.github.azige.gmarkdown;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.Constructor;
+import java.util.LinkedList;
+import java.util.List;
+
+import groovy.lang.GroovyClassLoader;
 
 /**
  *
  * @author Azige
  */
-class Util{
+final class Util{
 
     static final int BUFFER_SIZE = 1 << 16;
+
+    private Util(){
+    }
 
     static String readAll(Reader in) throws IOException{
         StringBuilder sb = new StringBuilder();
@@ -33,5 +43,48 @@ class Util{
             sb.append(buffer, 0, b);
         }
         return sb.toString();
+    }
+
+    static Plugin loadPlugin(String className){
+        try{
+            return (Plugin)Class.forName(className).newInstance();
+        }catch (Exception ex){
+            throw new GMarkdownException(ex);
+        }
+    }
+
+    static List<Plugin> loadPluginsFromDirectory(File dir){
+        List<Plugin> list = new LinkedList<>();
+        File[] files = dir.listFiles(new FilenameFilter(){
+
+            @Override
+            public boolean accept(File dir, String name){
+                return name.endsWith(".groovy");
+            }
+        });
+        if (files == null){
+            return list;
+        }
+        try{
+            GroovyClassLoader loader = new GroovyClassLoader();
+            loader.addClasspath(dir.getCanonicalPath());
+            final int extLength = ".groovy".length();
+            for (File f : files){
+                String name = f.getName();
+                list.add(wrapPlugin(name.substring(0, name.length() - extLength), loader.parseClass(f).newInstance()));
+            }
+        }catch (Exception ex){
+            throw new GMarkdownException(ex);
+        }
+        return list;
+    }
+
+    static Plugin wrapPlugin(String name, Object plugin){
+        try{
+            Constructor<?> constructor = Class.forName("io.github.azige.gmarkdown.PluginWrapper").getConstructor(String.class, Object.class);
+            return (Plugin)constructor.newInstance(name, plugin);
+        }catch (Exception ex){
+            throw new GMarkdownException(ex);
+        }
     }
 }
