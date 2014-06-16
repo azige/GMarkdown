@@ -18,8 +18,10 @@ package io.github.azige.gmarkdown;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import groovy.lang.Binding;
+
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -33,6 +35,7 @@ public class GMarkdownBuilder{
 
     final ScriptEngine engine;
     final Bindings globalBind;
+    final Map<String, Object> properties;
     String template;
     String strings;
     List<Plugin> plugins = new LinkedList<>();
@@ -44,6 +47,7 @@ public class GMarkdownBuilder{
         engine = new ScriptEngineManager().getEngineByName("groovy");
         globalBind = engine.createBindings();
         engine.setBindings(globalBind, ScriptContext.GLOBAL_SCOPE);
+        properties = new HashMap<>();
     }
 
     public GMarkdownBuilder setTemplate(String template){
@@ -72,13 +76,18 @@ public class GMarkdownBuilder{
         return this;
     }
 
+    public GMarkdownBuilder addProperty(String name, Object value){
+        properties.put(name, value);
+        return this;
+    }
+
     public GMarkdown build(){
         addPreFilter(new GroovyPreFilter());
         if (htmlFilter == null){
             htmlFilter = new MarkdownFilter();
         }
-        GMarkdown gm = new GMarkdown(engine.getFactory(), globalBind, preFilters, htmlFilter, postFilters);
-        globalBind.put("gmarkdown", gm);
+        GMarkdown gm = new GMarkdown(engine.getFactory(), globalBind, preFilters, htmlFilter, postFilters, properties);
+        globalBind.put("gmarkdown", Util.wrapPlugin("gmarkdown", gm));
         for (Plugin p : plugins){
             if (p instanceof ScriptPlugin){
                 ((ScriptPlugin)p).setBinding(new Binding(new HashMap(globalBind)));

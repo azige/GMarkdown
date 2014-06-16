@@ -42,17 +42,24 @@ public class Cli{
                 .hasArg()
                 .withArgName("locale")
                 .withDescription("set the locale")
-                .create('l'))
+                .create('l')
+            )
             .addOption(OptionBuilder
                 .hasArg()
                 .withArgName("template")
                 .withDescription("set the template")
-                .create('t'))
+                .create('t')
+            )
             .addOption(OptionBuilder
-            .hasArg()
-            .withArgName("plugin dir")
-            .withDescription("set the directory to load plugins")
-            .create('p'));
+                .hasArg()
+                .withArgName("plugin dir")
+                .withDescription("set the directory to load plugins")
+                .create('p')
+            )
+            .addOption(OptionBuilder
+                .withDescription("force override existed file")
+                .create('f')
+            );
         try{
             CommandLineParser parser = new BasicParser();
             CommandLine cl = parser.parse(options, args);
@@ -64,16 +71,35 @@ public class Cli{
 
             String[] fileArgs = cl.getArgs();
             if (fileArgs.length < 1){
-                throw new ParseException("Missing input files.");
+                List<String> list = new LinkedList<>();
+                for (File f : new File(".").listFiles(new FilenameFilter(){
+
+                    @Override
+                    public boolean accept(File dir, String name){
+                        return name.endsWith(".gmd");
+                    }
+                })){
+                    list.add(f.getName());
+                }
+                fileArgs = list.toArray(fileArgs);
             }
+
             GMarkdownBuilder builder = new GMarkdownBuilder();
+
             if (cl.hasOption('t')){
                 String template = cl.getOptionValue('t');
                 try (Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(template), "UTF-8"))){
                     builder.addPostFilter(new TemplateFilter(Util.readAll(in)));
                 }
             }else{
-                builder.addPostFilter(new TemplateFilter());
+                File templateFile = new File("template.html");
+                if (templateFile.exists()){
+                    try (Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(templateFile), "UTF-8"))){
+                        builder.addPostFilter(new TemplateFilter(Util.readAll(in)));
+                    }
+                }else{
+                    builder.addPostFilter(new TemplateFilter());
+                }
             }
 
             String resource = cl.getOptionValue('r');
@@ -82,6 +108,11 @@ public class Cli{
                 String locale = cl.getOptionValue('l');
                 if (locale != null){
                     System.setProperty("strings.locale", locale);
+                }
+            }else{
+                String resourceName = "Resource";
+                if (new File(resourceName + ".properties").exists()){
+                    System.setProperty("strings.resource", resourceName);
                 }
             }
             builder.addPlugin(Util.loadPlugin("io.github.azige.gmarkdown.Strings"));
@@ -95,6 +126,11 @@ public class Cli{
 
             for (Plugin p : Util.loadPluginsFromDirectory(pluginDir)){
                 builder.addPlugin(p);
+            }
+
+            boolean force = cl.hasOption('f');
+            if (force){
+                builder.addProperty("force", true);
             }
 
             List<File> fileList = new LinkedList<>();
@@ -123,22 +159,28 @@ public class Cli{
             }
 
             GMarkdown gm = builder.build();
-
+            Pattern fileNameSuffixPattern = Pattern.compile(".+\\.");
             for (File f : fileList){
                 String result;
+                File outFile;
+                if (f.getName().contains(".")){
+                    Matcher matcher = fileNameSuffixPattern.matcher(f.getName());
+                    matcher.find();
+                    outFile = new File(f.getParent(), matcher.group() + "html");
+                }else{
+                    outFile = new File(f.getParent(), f.getName() + ".html");
+                }
+                if (!force && outFile.lastModified() > f.lastModified()){
+                    System.out.println(f.getPath() + " passed.");
+                    continue;
+                }
                 try (Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"))){
                     result = gm.process(Util.readAll(in));
                 }
-                if (f.getName().contains(".")){
-                    Matcher matcher = Pattern.compile(".+\\.").matcher(f.getName());
-                    matcher.find();
-                    f = new File(f.getParent(), matcher.group() + "html");
-                }else{
-                    f = new File(f.getParent(), f.getName() + ".html");
-                }
-                try (Writer output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), "UTF-8"))){
+                try (Writer output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile), "UTF-8"))){
                     output.write(result);
                 }
+                System.out.println(f.getPath() + " -> " + outFile.getPath());
             }
         }catch (ParseException ex){
             System.err.println(ex.getMessage());
@@ -151,7 +193,7 @@ public class Cli{
     static void printHelp(PrintStream out, Options options){
         HelpFormatter hf = new HelpFormatter();
         PrintWriter pw = new PrintWriter(out);
-        hf.printHelp(pw, hf.getWidth(), "gmarkdown [-r <bundle> [-l <locale>]] [-t <template>] [-p <plugin dir> <input files>",
+        hf.printHelp(pw, hf.getWidth(), "gmarkdown [-r <bundle> [-l <locale>]] [-t <template>] [-p <plugin dir>] <input files>",
             "Convert input files.", options, hf.getLeftPadding(), hf.getDescPadding(), null);
         pw.flush();
     }

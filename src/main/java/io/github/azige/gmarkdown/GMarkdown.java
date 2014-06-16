@@ -14,6 +14,7 @@
 package io.github.azige.gmarkdown;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.script.*;
 
@@ -28,13 +29,22 @@ public class GMarkdown{
     final List<Filter> preFilters;
     final Filter htmlFilter;
     final List<Filter> postFilters;
+    final Map<String, ?> properties;
 
-    GMarkdown(ScriptEngineFactory engineFactory, Bindings globalBind, List<Filter> preFilters, Filter htmlFilter, List<Filter> postFilters){
+    GMarkdown(
+        ScriptEngineFactory engineFactory,
+        Bindings globalBind,
+        List<Filter> preFilters,
+        Filter htmlFilter,
+        List<Filter> postFilters,
+        Map<String, ?> properties
+    ){
         this.engineFactory = engineFactory;
         this.globalBind = globalBind;
         this.preFilters = preFilters;
         this.htmlFilter = htmlFilter;
         this.postFilters = postFilters;
+        this.properties = properties;
     }
 
     public String process(String source){
@@ -54,5 +64,9 @@ public class GMarkdown{
             source = f.filter(source);
         }
         return source;
+    }
+
+    public Object getProperty(String name){
+        return properties.get(name);
     }
 }
