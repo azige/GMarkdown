@@ -31,7 +31,7 @@ public class Mages{
     final List<Filter> preFilters;
     final Filter htmlFilter;
     final List<Filter> postFilters;
-    final Map<String, ?> properties;
+    final Map<String, Object> properties;
 
     Mages(
         ScriptEngineFactory engineFactory,
@@ -39,7 +39,7 @@ public class Mages{
         List<Filter> preFilters,
         Filter htmlFilter,
         List<Filter> postFilters,
-        Map<String, ?> properties
+        Map<String, Object> properties
     ){
         this.engineFactory = engineFactory;
         this.globalBind = globalBind;
@@ -70,5 +70,9 @@ public class Mages{
 
     public Object getProperty(String name){
         return properties.get(name);
+    }
+
+    public void setProperty(String name, Object value){
+        properties.put(name, value);
     }
 }

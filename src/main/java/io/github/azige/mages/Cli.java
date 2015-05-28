@@ -16,9 +16,6 @@
 package io.github.azige.mages;
 
 import java.io.*;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.cli.*;
 
@@ -32,36 +29,36 @@ public class Cli{
 
         Options options = new Options()
             .addOption("h", "help", false, "print this message")
-            .addOption(OptionBuilder
+            .addOption(Option.builder("r")
                 .hasArg()
-                .withArgName("bundle")
-                .withDescription("set the ResourceBundle")
-                .create('r')
+                .argName("bundle")
+                .desc("set the ResourceBundle")
+                .build()
             )
-            .addOption(OptionBuilder
+            .addOption(Option.builder("l")
                 .hasArg()
-                .withArgName("locale")
-                .withDescription("set the locale")
-                .create('l')
+                .argName("locale")
+                .desc("set the locale")
+                .build()
             )
-            .addOption(OptionBuilder
+            .addOption(Option.builder("t")
                 .hasArg()
-                .withArgName("template")
-                .withDescription("set the template")
-                .create('t')
+                .argName("template")
+                .desc("set the template")
+                .build()
             )
-            .addOption(OptionBuilder
+            .addOption(Option.builder("p")
                 .hasArg()
-                .withArgName("plugin dir")
-                .withDescription("set the directory to load plugins")
-                .create('p')
+                .argName("plugin dir")
+                .desc("set the directory to load plugins")
+                .build()
             )
-            .addOption(OptionBuilder
-                .withDescription("force override existed file")
-                .create('f')
+            .addOption(Option.builder("f")
+                .desc("force override existed file")
+                .build()
             );
         try{
-            CommandLineParser parser = new BasicParser();
+            CommandLineParser parser = new DefaultParser();
             CommandLine cl = parser.parse(options, args);
 
             if (cl.hasOption('h')){
@@ -69,124 +66,37 @@ public class Cli{
                 return;
             }
 
+            MagesSiteGenerator msg = new MagesSiteGenerator(new File("."), new File("."));
+
             String[] fileArgs = cl.getArgs();
             if (fileArgs.length < 1){
-                List<String> list = new LinkedList<>();
-                for (File f : new File(".").listFiles(new FilenameFilter(){
-
-                    @Override
-                    public boolean accept(File dir, String name){
-                        return name.endsWith(".gmd");
-                    }
-                })){
-                    list.add(f.getName());
-                }
-                fileArgs = list.toArray(fileArgs);
-            }
-
-            MagesBuilder builder = new MagesBuilder();
-
-            if (cl.hasOption('t')){
-                String template = cl.getOptionValue('t');
-                try (Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(template), "UTF-8"))){
-                    builder.addPostFilter(new TemplateFilter(Util.readAll(in)));
-                }
+                msg.addTask(".");
             }else{
-                File templateFile = new File("template.html");
-                if (templateFile.exists()){
-                    try (Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(templateFile), "UTF-8"))){
-                        builder.addPostFilter(new TemplateFilter(Util.readAll(in)));
-                    }
-                }else{
-                    builder.addPostFilter(new TemplateFilter());
+                for (String path : fileArgs){
+                    msg.addTask(path);
                 }
             }
 
-            String resource = cl.getOptionValue('r');
-            if (resource != null){
-                System.setProperty("strings.resource", resource);
-                String locale = cl.getOptionValue('l');
-                if (locale != null){
-                    System.setProperty("strings.locale", locale);
-                }
-            }else{
-                String resourceName = "Resource";
-                if (new File(resourceName + ".properties").exists()){
-                    System.setProperty("strings.resource", resourceName);
-                }
-            }
-            builder.addPlugin(Util.loadPlugin("io.github.azige.mages.Strings"));
-
-            File pluginDir;
-            if (cl.hasOption('p')){
-                pluginDir = new File(cl.getOptionValue('p'));
-            }else{
-                pluginDir = new File("./plugin");
+            if (cl.hasOption("t")){
+                msg.setTemplate(new File(cl.getOptionValue("t")));
             }
 
-            for (Plugin p : Util.loadPluginsFromDirectory(pluginDir)){
-                builder.addPlugin(p);
+            if (cl.hasOption("r")){
+                msg.setResource(new File(cl.getOptionValue("r")));
             }
 
-            boolean force = cl.hasOption('f');
-            if (force){
-                builder.addProperty("force", true);
+            if (cl.hasOption("p")){
+                msg.setPluginDir(new File(cl.getOptionValue("p")));
             }
 
-            List<File> fileList = new LinkedList<>();
-            for (String fileArg : fileArgs){
-                if (fileArg.contains("*")){
-                    fileArg = fileArg.replaceAll("\\.", "\\.").replaceAll("\\*", ".*");
-                    File parent = new File(fileArg).getParentFile();
-                    if (parent == null){
-                        parent = new File(".");
-                    }
-                    final Pattern p = Pattern.compile(new File(fileArg).getName());
-                    FileFilter filter = new FileFilter(){
-
-                        @Override
-                        public boolean accept(File pathname){
-                            return p.matcher(pathname.getName()).matches();
-                        }
-                    };
-                    File[] files = parent.listFiles(filter);
-                    if (files != null){
-                        fileList.addAll(Arrays.asList(files));
-                    }
-                }else{
-                    fileList.add(new File(fileArg));
-                }
+            if (cl.hasOption("f")){
+                msg.setForce(true);
             }
 
-            Mages gm = builder.build();
-            Pattern fileNameSuffixPattern = Pattern.compile(".+\\.");
-            for (File f : fileList){
-                String result;
-                File outFile;
-                if (f.getName().contains(".")){
-                    Matcher matcher = fileNameSuffixPattern.matcher(f.getName());
-                    matcher.find();
-                    outFile = new File(f.getParent(), matcher.group() + "html");
-                }else{
-                    outFile = new File(f.getParent(), f.getName() + ".html");
-                }
-                if (!force && outFile.lastModified() > f.lastModified()){
-                    System.out.println(f.getPath() + " passed.");
-                    continue;
-                }
-                try (Reader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"))){
-                    result = gm.process(Util.readAll(in));
-                }
-                try (Writer output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile), "UTF-8"))){
-                    output.write(result);
-                }
-                System.out.println(f.getPath() + " -> " + outFile.getPath());
-            }
+            msg.start();
         }catch (ParseException ex){
             System.err.println(ex.getMessage());
             printHelp(System.err, options);
-        }catch (IOException ex){
-            System.err.println(ex);
         }
     }
 

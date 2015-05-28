@@ -22,4 +22,10 @@ package io.github.azige.mages;
 public interface Plugin{
 
     String getName();
+
+    default void onStart(MagesSiteGenerator m){
+    }
+
+    default void onDestroy(MagesSiteGenerator m){
+    }
 }
