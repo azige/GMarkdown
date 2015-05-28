@@ -38,12 +38,28 @@ class PluginWrapper implements ScriptPlugin{
         }
     }
 
+    void onStart(MagesSiteGenerator m){
+        if (plugin.class.methods.find{it.name == 'onStart'}){
+            plugin.onStart(m)
+        }
+    }
+
+    void onDestroy(MagesSiteGenerator m){
+        if (plugin.class.methods.find{it.name == 'onDestroy'}){
+            plugin.onDestroy(m)
+        }
+    }
+
     def getProperty(String property){
         if (property == "name"){
             return name
         }else{
             return plugin.getProperty(property)
         }
+    }
+
+    void setProperty(String property, def value){
+        plugin.setProperty(property, value)
     }
 
     def invokeMethod(String method, def args){

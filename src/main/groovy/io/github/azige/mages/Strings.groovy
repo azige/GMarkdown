@@ -24,20 +24,12 @@ public class Strings implements Plugin{
     private ResourceBundle bundle
 
     Strings(){
-        def res = System.getProperty("strings.resource")
-        def locale = System.getProperty("strings.locale")
-        if (res){
-            if (!locale){
-                bundle = ResourceBundle.getBundle(res)
-            }else{
-                def strs = locale.split("_")
-                def builder = new Locale.Builder()
-                builder.setLanguage(strs[0])
-                if (strs.length > 1){
-                    builder.setRegion(strs[1]);
-                }
-                bundle = ResourceBundle.getBundle(res, builder.build())
-            }
+    }
+
+    void onStart(MagesSiteGenerator msg){
+        def resFile = msg.resource
+        if (resFile){
+            bundle = new PropertyResourceBundle(resFile.newReader())
         }
     }
 

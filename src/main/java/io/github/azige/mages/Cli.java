@@ -83,6 +83,11 @@ public class Cli{
 
             if (cl.hasOption("r")){
                 msg.setResource(new File(cl.getOptionValue("r")));
+            }else{
+                File resource = new File("Resource.properties");
+                if (resource.exists()){
+                    msg.setResource(resource);
+                }
             }
 
             if (cl.hasOption("p")){

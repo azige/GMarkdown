@@ -160,7 +160,7 @@ public class MagesSiteGenerator{
             while (!tasks.isEmpty()){
                 Task task = tasks.poll();
                 mages.setProperty("currentFile", task.source);
-                if (task.source.lastModified() > task.target.lastModified()){
+                if (task.source.lastModified() > task.target.lastModified() || force){
                     String source = FileUtils.readFileToString(task.source, "UTF-8");
                     FileUtils.writeStringToFile(task.target, mages.process(source), "UTF-8");
                     System.out.println(task.source.getName() + " -> " + task.target.getName());

@@ -45,6 +45,6 @@ public class MainTest{
 
     @Test
     public void testSomeMethod() throws Exception{
-        Cli.main(new String[]{"-p", "target/test-classes/plugin", "-r", "TestResource", "target/test-classes"});
+        Cli.main(new String[]{"-f", "-p", "target/test-classes/plugin", "-r", "target/test-classes/TestResource.properties", "target/test-classes"});
     }
 }
