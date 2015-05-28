@@ -13,27 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.azige.gmarkdown;
+package io.github.azige.mages;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
  * @author Azige
  */
-public class GMarkdownException extends RuntimeException{
+public class MainTest{
 
-    public GMarkdownException(){
+    @BeforeClass
+    public static void setUpClass(){
     }
 
-    public GMarkdownException(String message){
-        super(message);
+    @AfterClass
+    public static void tearDownClass(){
     }
 
-    public GMarkdownException(String message, Throwable cause){
-        super(message, cause);
+    @Before
+    public void setUp(){
     }
 
-    public GMarkdownException(Throwable cause){
-        super(cause);
+    @After
+    public void tearDown(){
     }
 
+    @Test
+    public void testSomeMethod() throws Exception{
+        Cli.main(new String[]{"-p", "target/test-classes/plugin", "-r", "TestResource", "target/test-classes/*.gmd"});
+    }
 }

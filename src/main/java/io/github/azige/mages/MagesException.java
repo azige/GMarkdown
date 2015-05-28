@@ -13,15 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.azige.gmarkdown;
-
-import javax.script.ScriptEngine;
+package io.github.azige.mages;
 
 /**
  *
  * @author Azige
  */
-public interface GroovyFilter extends Filter{
+public class MagesException extends RuntimeException{
 
-    void setEngine(ScriptEngine engine);
+    public MagesException(){
+    }
+
+    public MagesException(String message){
+        super(message);
+    }
+
+    public MagesException(String message, Throwable cause){
+        super(message, cause);
+    }
+
+    public MagesException(Throwable cause){
+        super(cause);
+    }
+
 }

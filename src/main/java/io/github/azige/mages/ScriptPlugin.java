@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package io.github.azige.mages;
 
-package io.github.azige.gmarkdown;
-
-import org.pegdown.PegDownProcessor;
+import groovy.lang.Binding;
 
 /**
  *
  * @author Azige
  */
-public class MarkdownFilter implements Filter{
+public interface ScriptPlugin extends Plugin{
 
-    PegDownProcessor pegDown = new PegDownProcessor();
-
-    @Override
-    public String filter(String source){
-        return pegDown.markdownToHtml(source);
-    }
+    void setBinding(Binding bind);
 }

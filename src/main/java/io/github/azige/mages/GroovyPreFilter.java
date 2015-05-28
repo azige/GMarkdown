@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.azige.gmarkdown;
+package io.github.azige.mages;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -31,7 +31,7 @@ public class GroovyPreFilter implements GroovyFilter{
         try{
             return engine.eval(source).toString();
         }catch (ScriptException ex){
-            throw new GMarkdownException(ex);
+            throw new MagesException(ex);
         }
     }
 

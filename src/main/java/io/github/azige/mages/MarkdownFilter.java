@@ -13,39 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.azige.gmarkdown;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+package io.github.azige.mages;
+
+import org.pegdown.PegDownProcessor;
 
 /**
  *
  * @author Azige
  */
-public class MainTest{
+public class MarkdownFilter implements Filter{
 
-    @BeforeClass
-    public static void setUpClass(){
-        GithubApi.enableLog();
-    }
+    PegDownProcessor pegDown = new PegDownProcessor();
 
-    @AfterClass
-    public static void tearDownClass(){
-    }
-
-    @Before
-    public void setUp(){
-    }
-
-    @After
-    public void tearDown(){
-    }
-
-    @Test
-    public void testSomeMethod() throws Exception{
-        Cli.main(new String[]{"-p", "target/test-classes/plugin", "-r", "TestResource", "target/test-classes/*.gmd"});
+    @Override
+    public String filter(String source){
+        return pegDown.markdownToHtml(source);
     }
 }

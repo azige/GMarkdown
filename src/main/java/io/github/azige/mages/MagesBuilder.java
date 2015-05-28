@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.azige.gmarkdown;
+package io.github.azige.mages;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -31,7 +31,7 @@ import javax.script.ScriptEngineManager;
  *
  * @author Azige
  */
-public class GMarkdownBuilder{
+public class MagesBuilder{
 
     final ScriptEngine engine;
     final Bindings globalBind;
@@ -43,51 +43,51 @@ public class GMarkdownBuilder{
     Filter htmlFilter;
     List<Filter> postFilters = new LinkedList<>();
 
-    public GMarkdownBuilder(){
+    public MagesBuilder(){
         engine = new ScriptEngineManager().getEngineByName("groovy");
         globalBind = engine.createBindings();
         engine.setBindings(globalBind, ScriptContext.GLOBAL_SCOPE);
         properties = new HashMap<>();
     }
 
-    public GMarkdownBuilder setTemplate(String template){
+    public MagesBuilder setTemplate(String template){
         this.template = template;
         return this;
     }
 
-    public GMarkdownBuilder setStrings(String strings){
+    public MagesBuilder setStrings(String strings){
         this.strings = strings;
         return this;
     }
 
-    public GMarkdownBuilder addPreFilter(Filter filter){
+    public MagesBuilder addPreFilter(Filter filter){
         preFilters.add(filter);
         return this;
     }
 
-    public GMarkdownBuilder addPostFilter(Filter filter){
+    public MagesBuilder addPostFilter(Filter filter){
         postFilters.add(filter);
         return this;
     }
 
-    public GMarkdownBuilder addPlugin(Plugin plugin){
+    public MagesBuilder addPlugin(Plugin plugin){
         plugins.add(plugin);
         globalBind.put(plugin.getName(), plugin);
         return this;
     }
 
-    public GMarkdownBuilder addProperty(String name, Object value){
+    public MagesBuilder addProperty(String name, Object value){
         properties.put(name, value);
         return this;
     }
 
-    public GMarkdown build(){
+    public Mages build(){
         addPreFilter(new GroovyPreFilter());
         if (htmlFilter == null){
             htmlFilter = new MarkdownFilter();
         }
-        GMarkdown gm = new GMarkdown(engine.getFactory(), globalBind, preFilters, htmlFilter, postFilters, properties);
-        globalBind.put("gmarkdown", Util.wrapPlugin("gmarkdown", gm));
+        Mages gm = new Mages(engine.getFactory(), globalBind, preFilters, htmlFilter, postFilters, properties);
+        globalBind.put("mages", Util.wrapPlugin("mages", gm));
         for (Plugin p : plugins){
             if (p instanceof ScriptPlugin){
                 ((ScriptPlugin)p).setBinding(new Binding(new HashMap(globalBind)));

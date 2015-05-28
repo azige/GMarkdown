@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.azige.gmarkdown;
+package io.github.azige.mages;
 
 /**
  *
  * @author Azige
  */
-public interface Plugin{
+public interface Filter{
 
-    String getName();
+    String filter(String source);
 }

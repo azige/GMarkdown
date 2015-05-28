@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.azige.gmarkdown;
+package io.github.azige.mages;
 
-import groovy.lang.Binding;
+import javax.script.ScriptEngine;
 
 /**
  *
  * @author Azige
  */
-public interface ScriptPlugin extends Plugin{
+public interface GroovyFilter extends Filter{
 
-    void setBinding(Binding bind);
+    void setEngine(ScriptEngine engine);
 }

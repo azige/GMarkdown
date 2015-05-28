@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.azige.gmarkdown;
+package io.github.azige.mages;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -59,7 +59,7 @@ public class TemplateFilter implements GroovyFilter{
         try{
             return engine.eval(template).toString();
         }catch (ScriptException ex){
-            throw new GMarkdownException(ex);
+            throw new MagesException(ex);
         }
     }
 
@@ -67,7 +67,7 @@ public class TemplateFilter implements GroovyFilter{
         try (Reader in = new InputStreamReader(TemplateFilter.class.getResourceAsStream(DEFAULT_TEMPLATE), "UTF-8")){
             setTemplate(Util.readAll(in));
         }catch(IOException ex){
-            throw new GMarkdownException(ex);
+            throw new MagesException(ex);
         }
     }
 }

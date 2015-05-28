@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.azige.gmarkdown;
+package io.github.azige.mages;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -49,7 +49,7 @@ final class Util{
         try{
             return (Plugin)Class.forName(className).newInstance();
         }catch (Exception ex){
-            throw new GMarkdownException(ex);
+            throw new MagesException(ex);
         }
     }
 
@@ -74,17 +74,17 @@ final class Util{
                 list.add(wrapPlugin(name.substring(0, name.length() - extLength), loader.parseClass(f).newInstance()));
             }
         }catch (Exception ex){
-            throw new GMarkdownException(ex);
+            throw new MagesException(ex);
         }
         return list;
     }
 
     static Plugin wrapPlugin(String name, Object plugin){
         try{
-            Constructor<?> constructor = Class.forName("io.github.azige.gmarkdown.PluginWrapper").getConstructor(String.class, Object.class);
+            Constructor<?> constructor = Class.forName("io.github.azige.mages.PluginWrapper").getConstructor(String.class, Object.class);
             return (Plugin)constructor.newInstance(name, plugin);
         }catch (Exception ex){
-            throw new GMarkdownException(ex);
+            throw new MagesException(ex);
         }
     }
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.azige.gmarkdown;
+package io.github.azige.mages;
 
 import java.io.*;
 import java.util.*;
@@ -84,7 +84,7 @@ public class Cli{
                 fileArgs = list.toArray(fileArgs);
             }
 
-            GMarkdownBuilder builder = new GMarkdownBuilder();
+            MagesBuilder builder = new MagesBuilder();
 
             if (cl.hasOption('t')){
                 String template = cl.getOptionValue('t');
@@ -115,7 +115,7 @@ public class Cli{
                     System.setProperty("strings.resource", resourceName);
                 }
             }
-            builder.addPlugin(Util.loadPlugin("io.github.azige.gmarkdown.Strings"));
+            builder.addPlugin(Util.loadPlugin("io.github.azige.mages.Strings"));
 
             File pluginDir;
             if (cl.hasOption('p')){
@@ -158,7 +158,7 @@ public class Cli{
                 }
             }
 
-            GMarkdown gm = builder.build();
+            Mages gm = builder.build();
             Pattern fileNameSuffixPattern = Pattern.compile(".+\\.");
             for (File f : fileList){
                 String result;
@@ -193,7 +193,7 @@ public class Cli{
     static void printHelp(PrintStream out, Options options){
         HelpFormatter hf = new HelpFormatter();
         PrintWriter pw = new PrintWriter(out);
-        hf.printHelp(pw, hf.getWidth(), "gmarkdown [-r <bundle> [-l <locale>]] [-t <template>] [-p <plugin dir>] <input files>",
+        hf.printHelp(pw, hf.getWidth(), "mages [-r <bundle> [-l <locale>]] [-t <template>] [-p <plugin dir>] <input files>",
             "Convert input files.", options, hf.getLeftPadding(), hf.getDescPadding(), null);
         pw.flush();
     }

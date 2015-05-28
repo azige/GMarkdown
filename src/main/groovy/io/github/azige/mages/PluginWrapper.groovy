@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.azige.gmarkdown
+package io.github.azige.mages
 
 /**
  *
