@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import groovy.lang.GroovyClassLoader;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -71,7 +72,8 @@ final class Util{
             final int extLength = ".groovy".length();
             for (File f : files){
                 String name = f.getName();
-                list.add(wrapPlugin(name.substring(0, name.length() - extLength), loader.parseClass(f).newInstance()));
+                String script = FileUtils.readFileToString(f, "UTF-8");
+                list.add(wrapPlugin(name.substring(0, name.length() - extLength), loader.parseClass(script).newInstance()));
             }
         }catch (Exception ex){
             throw new MagesException(ex);

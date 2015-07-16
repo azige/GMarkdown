@@ -143,7 +143,7 @@ public class MagesSiteGenerator{
             }
 
             if (template == null){
-                template = new File(DEFAULT_TEMPLATE);
+                template = new File(sourceDir, DEFAULT_TEMPLATE);
             }
             if (template.exists()){
                 builder.addPostFilter(new TemplateFilter(FileUtils.readFileToString(template, "UTF-8")));
